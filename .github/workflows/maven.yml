@@ -1,34 +1,77 @@
-# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-name: Java CI with Maven
+name: Simple Java CI with Manual Approval
 
 on:
   push:
-    branches: [ "master" ]
+    branches:
+      - main
+      - uat
+      - dev
   pull_request:
-    branches: [ "master" ]
+    branches:
+      - main
+      - uat
+      - dev
 
 jobs:
   build:
-
     runs-on: self-hosted
+    environment:
+      name: build
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: maven
-    - name: Build with Maven
-      run: mvn clean install
-    - name: package with Maven
-      run: mvn package
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Compile and test the project
+        run: mvn clean install
+      - name: Package the project
+        run: mvn package
+      - name: Notify build success
+        run: echo "Build and package completed!"
 
+
+  deploy_to_dev:
+    runs-on: self-hosted
+    environment:
+      name: dev
+    needs: build
+    if: github.ref == 'refs/heads/dev' 
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Deploy to development
+        run: echo "Deploying to development environment"
+      - name: Notify deployment success
+        run: echo "Deployment to development was successful!"
+
+
+  deploy_to_uat:
+    runs-on: self-hosted
+    environment:
+      name: uat
+    needs: build
+    if: github.ref == 'refs/heads/uat' 
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Deploy to UAT
+        run: echo "Deploying to UAT environment"
+      - name: Notify deployment success
+        run: echo "Deployment to UAT was successful!"
+
+
+  deploy_to_production:
+    runs-on: self-hosted
+    environment:
+      name: production
+    needs: build
+    if: github.ref == 'refs/heads/main' 
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Deploy to production
+        run: echo "Deploying to production environment"
+      - name: Notify deployment success
+        run: echo "Deployment to production was successful!"
