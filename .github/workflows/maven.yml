@@ -1,3 +1,4 @@
+# java ci 
 name: Simple Java CI with Manual Approval
 
 on:
